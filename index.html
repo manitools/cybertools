@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ManiTools | Cyber Security Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050505;
+            --primary-color: #00ffcc;
+            --secondary-color: #ff00ff;
+            --text-color: #e0e0e0;
+            --card-bg: rgba(10, 10, 10, 0.85);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Share Tech Mono', monospace;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Matrix Background */
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            opacity: 0.4;
+        }
+
+        /* CRT Scanline Effect */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        /* Glitch Text Effect */
+        .glitch {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            position: relative;
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.8;
+        }
+
+        .glitch::before {
+            left: 2px;
+            text-shadow: -2px 0 var(--secondary-color);
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+
+        .glitch::after {
+            left: -2px;
+            text-shadow: -2px 0 #00ffff;
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim 2.5s infinite linear alternate-reverse;
+        }
+
+        header p {
+            color: #888;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        /* Card Styling */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 25px;
+            text-decoration: none;
+            color: var(--text-color);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            animation: fadeInUp 0.8s ease-out backwards;
+        }
+
+        /* Staggered Animations */
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+        .card:nth-child(5) { animation-delay: 0.5s; }
+        .card:nth-child(6) { animation-delay: 0.6s; }
+        .card:nth-child(7) { animation-delay: 0.7s; }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: var(--primary-color);
+            transition: left 0.5s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
+            background: rgba(10, 10, 10, 0.95);
+        }
+
+        .card:hover::before {
+            left: 0;
+        }
+
+        .card h2 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .card h2::before {
+            content: '>';
+            margin-right: 10px;
+            color: var(--secondary-color);
+            animation: blink 1s infinite;
+        }
+
+        .card p {
+            color: #aaa;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .card .btn-text {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--secondary-color);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            transition: color 0.3s ease;
+        }
+
+        .card:hover .btn-text {
+            color: var(--primary-color);
+            text-shadow: 0 0 8px rgba(0, 255, 204, 0.5);
+        }
+
+        /* Keyframes */
+        @keyframes glitch-anim {
+            0% { clip: rect(4px, 9999px, 91px, 0); }
+            20% { clip: rect(61px, 9999px, 20px, 0); }
+            40% { clip: rect(100px, 9999px, 59px, 0); }
+            60% { clip: rect(2px, 9999px, 73px, 0); }
+            80% { clip: rect(40px, 9999px, 7px, 0); }
+            100% { clip: rect(96px, 9999px, 86px, 0); }
+        }
+        @keyframes glitch-anim-2 {
+            0% { clip: rect(65px, 9999px, 100px, 0); }
+            20% { clip: rect(3px, 9999px, 50px, 0); }
+            40% { clip: rect(25px, 9999px, 99px, 0); }
+            60% { clip: rect(89px, 9999px, 33px, 0); }
+            80% { clip: rect(11px, 9999px, 64px, 0); }
+            100% { clip: rect(45px, 9999px, 12px, 0); }
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #555;
+            font-size: 0.9rem;
+        }
+        footer span {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrix"></canvas>
+    <div class="scanlines"></div>
+
+    <div class="container">
+        <header>
+            <h1 class="glitch" data-text="MANITOOLS">MANITOOLS</h1>
+            <p>SYSTEM.CORE // CYBERSECURITY_TOOLKIT_V1</p>
+        </header>
+
+        <main class="grid">
+            <a href="https://manitools.github.io/iocchecker/" class="card" target="_blank" rel="noopener noreferrer">
+                <h2>IOC Checker</h2>
+                <p>Scan and verify Indicators of Compromise (IOCs). Validate hashes, IPs, and domains against threat intelligence.</p>
+                <span class="btn-text">Execute Tool -></span>
+            </a>
+
+            <a href="https://manitools.github.io/cybertoolkit/" class="card" target="_blank" rel="noopener noreferrer">
+                <h2>Cyber Toolkit</h2>
+                <p>A comprehensive suite of essential utilities and scripts designed for penetration testers and security analysts.</p>
+                <span class="btn-text">Execute Tool -></span>
+            </a>
+
+            <a href="https://manitools.github.io/macvendorlookup/" class="card" target="_blank" rel="noopener noreferrer">
+                <h2>MAC Vendor Lookup</h2>
+                <p>Quickly identify network hardware manufacturers by querying Organizationally Unique Identifiers (OUIs) via MAC address.</p>
+                <span class="btn-text">Execute Tool -></span>
+            </a>
+
+            <a href="https://github.com/manitools/bulkdnslookup" class="card" target="_blank" rel="noopener noreferrer">
+                <h2>Bulk DNS Lookup</h2>
+                <p>Perform massive, asynchronous DNS resolution for bulk domains. Ideal for recon and infrastructure mapping.</p>
+                <span class="btn-text">View Repository -></span>
+            </a>
+
+            <a href="https://manitools.github.io/ipbulklookup" class="card" target="_blank" rel="noopener noreferrer">
+                <h2>IP Bulk Lookup</h2>
+                <p>Analyze thousands of IP addresses simultaneously to extract ASN, geolocation, and routing data.</p>
+                <span class="btn-text">Execute Tool -></span>
+            </a>
+
+            <a href="https://manitools.github.io/whoischecker/" class="card" target="_blank" rel="noopener noreferrer">
+                <h2>Whois Checker</h2>
+                <p>Retrieve deep registration data, contact details, and DNS server records for specific domains.</p>
+                <span class="btn-text">Execute Tool -></span>
+            </a>
+
+            <a href="https://manitools.github.io/emailheaderparser/" class="card" target="_blank" rel="noopener noreferrer">
+                <h2>Email Header Parser</h2>
+                <p>Extract routing information, analyze SPF/DKIM/DMARC records, and detect spoofing attempts from raw email headers.</p>
+                <span class="btn-text">Execute Tool -></span>
+            </a>
+        </main>
+        
+        <footer>
+            <p>SECURE CONNECTION ESTABLISHED // <span>MANITOOLS LABS</span></p>
+        </footer>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレゲゼデベペオォコソトノホモヨョロゴゾドボポヴッン';
+        const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const nums = '0123456789';
+        const alphabet = katakana + latin + nums;
+
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const rainDrops = [];
+
+        for (let x = 0; x < columns; x++) {
+            rainDrops[x] = 1;
+        }
+
+        const draw = () => {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#0F0';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < rainDrops.length; i++) {
+                const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+                
+                if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    rainDrops[i] = 0;
+                }
+                rainDrops[i]++;
+            }
+        };
+
+        setInterval(draw, 30);
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
